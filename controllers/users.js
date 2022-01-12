@@ -25,3 +25,4 @@ module.exports.getUser = (req, res) => {
     })
     .catch(() => res.status(500).send({ message: 'Ошибка по умолчанию' }));
 };
+console.log();
