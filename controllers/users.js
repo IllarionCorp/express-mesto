@@ -9,28 +9,38 @@ module.exports.createUser = (req, res) => {
       res.status(201).send({ data: user });
     })
     .catch((err) => {
-      // if (err.name === 'SomeErrorName') {
-      // eslint-disable-next-line max-len
-      //   res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя.' });
-      // } else {
-      //   res.status(500).send({ message: 'Ошибка по умолчанию' });
-      // }
+      console.log(err);
+      if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя.' });
+      } else {
+        res.status(500).send({ message: 'Ошибка по умолчанию' });
+      }
       res.send(err.name);
     });
 };
 
 module.exports.getUsers = (req, res) => User
-  .find({})
-  .then((user) => {
-    res.status(200).send(user);
+  .find()
+  .then((users) => {
+    console.log(users);
+    res.status(200).send(users);
   })
-  .catch(() => {
+  .catch((err) => {
+    console.log(err.name);
     res.status(500).send({ message: 'Ошибка по умолчанию' });
   });
 
 module.exports.getUser = (req, res) => {
   const { id } = req.params;
-  const user = User.find((u) => u.id === id);
+  return User
+    .findById(id)
+    .then((user) => {
+      res.status(200).send(user);
+    })
+    .catch((err) => {
+      console.log(err.name);
+      res.status(500).send({ message: 'Внутренняя ошибка сервера' });
+    });
 
-  res.status(200).send(user);
+  // res.status(200).send(user);
 };
