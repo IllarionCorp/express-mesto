@@ -10,7 +10,7 @@ const { PORT = 3000 } = process.env;
 const app = express();
 app.use(bodyParser.json());
 
-mongoose.connect('mongodb:localhost:27017/express-mesto', () => {
+mongoose.connect('mongodb://localhost:27017/express-mesto', () => {
   console.log('CHECK DB');
 });
 app.use(express.json());

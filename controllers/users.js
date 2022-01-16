@@ -1,17 +1,20 @@
 const User = require('../models/user');
+const ValidationError = require('../errors/validation_error');
+const BadRequestError = require('../errors/bad-request-error');
+const NotFoundError = require('../errors/not-found-error');
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const { name, about, avatar } = req.body;
 
   return User
     .create({ name, about, avatar })
     .then((user) => {
-      res.status(201).send({ data: user });
+      res.status(201).send({ user });
     })
     .catch((err) => {
-      console.log(err);
+      console.log(err.name);
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя.' });
+        next(new BadRequestError('Неверно переданы данные пользователя'));
       } else {
         res.status(500).send({ message: 'Ошибка по умолчанию' });
       }
