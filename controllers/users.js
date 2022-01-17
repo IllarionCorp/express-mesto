@@ -30,7 +30,8 @@ module.exports.getUsers = (req, res) => User
 
 module.exports.getUser = (req, res) => {
   const { id } = req.params;
-  const user = User.find((u) => u.id === id);
 
-  res.status(200).send(user);
+  return User.findById(id)
+    .then((user) => res.status(200).send(user))
+    .catch(() => res.status(500).send({ message: 'Все померло' }));
 };
