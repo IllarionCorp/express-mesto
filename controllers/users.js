@@ -35,12 +35,13 @@ module.exports.getUser = (req, res, next) => {
   const { id } = req.params;
   return User
     .findById(id)
+    .orFail(new NotFoundError(`Пользователь с id ${id} не найден`))
     .then((user) => {
       res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'NotFoundError') {
-        next(new NotFoundError(`Пользователь с id ${id} не найден`));
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Невалидный id'));
       } else {
         next(err);
       }
@@ -48,7 +49,8 @@ module.exports.getUser = (req, res, next) => {
 };
 
 module.exports.updateUser = (req, res, next) => {
-  const { id, name, about } = req.body;
+  const { name, about } = req.body;
+  const id = req.user._id;
 
   return User
     .findByIdAndUpdate(
@@ -57,17 +59,17 @@ module.exports.updateUser = (req, res, next) => {
       {
         new: true,
         runValidators: true,
-        upsert: true,
       },
     )
+    .orFail(new NotFoundError(`Пользователь с id ${id} не найден`))
     .then((user) => {
       res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError(`${Object.values(err.errors).map((error) => error.message).join(', ')}`));
-      } else if (err.name === 'NotFoundError') {
-        next(new NotFoundError(`Пользователь с id ${id} не найден`));
+      } else if (err.name === 'CastError') {
+        next(new BadRequestError('Невалидный id'));
       } else {
         next(err);
       }
@@ -75,7 +77,8 @@ module.exports.updateUser = (req, res, next) => {
 };
 
 module.exports.updateAvatar = (req, res, next) => {
-  const { id, avatar } = req.body;
+  const { avatar } = req.body;
+  const id = req.user._id;
 
   return User
     .findByIdAndUpdate(
@@ -84,17 +87,17 @@ module.exports.updateAvatar = (req, res, next) => {
       {
         new: true,
         runValidators: true,
-        upsert: true,
       },
     )
+    .orFail(new NotFoundError(`Пользователь с id ${id} не найден`))
     .then((user) => {
       res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError(`${Object.values(err.errors).map((error) => error.message).join(', ')}`));
-      } else if (err.name === 'NotFoundError') {
-        next(new NotFoundError(`Пользователь с id ${id} не найден`));
+      } else if (err.name === 'CastError') {
+        next(new BadRequestError('Невалидный id'));
       } else {
         next(err);
       }
