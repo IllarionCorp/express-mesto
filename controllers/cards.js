@@ -1,18 +1,17 @@
 const Card = require('../models/card');
-const ValidationError = require('../errors/validation_error');
 const BadRequestError = require('../errors/bad-request-error');
 const NotFoundError = require('../errors/not-found-error');
 
-const getCards = (req, res) => Card
+const getCards = (req, res, next) => Card
   .find()
   .then((cards) => {
     res.status(201).send(cards);
   })
-  .catch(() => {
-    res.status(500).send('Что-то пошло не так');
+  .catch((err) => {
+    next(err);
   });
 
-function createCard(req, res) {
+function createCard(req, res, next) {
   const {
     name, link, owner, likes, createdAt,
   } = req.body;
@@ -24,12 +23,16 @@ function createCard(req, res) {
     .then((card) => {
       res.status(200).send(card);
     })
-    .catch(() => {
-      res.status(500).send('Что-то пошло не так');
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError(`${Object.values(err.errors).map((error) => error.message).join(', ')}`));
+      } else {
+        next(err);
+      }
     });
 }
 
-const deleteCard = (req, res) => {
+const deleteCard = (req, res, next) => {
   const { id } = req.params;
 
   return Card
@@ -37,38 +40,58 @@ const deleteCard = (req, res) => {
     .then((cards) => {
       res.status(200).send(cards);
     })
-    .catch(() => {
-      res.status(500).send('Что-то пошло не так');
+    .catch((err) => {
+      if (err.name === 'NotFoundError') {
+        next(new NotFoundError(`Карточка с id ${id} не найдена`));
+      } else {
+        next(err);
+      }
     });
 };
 
-const likeCard = (req, res) => {
-  Card
+const likeCard = (req, res, next) => {
+  const { id } = req.params;
+
+  return Card
     .findByIdAndUpdate(
-      req.params.cardId,
+      id,
       { $addToSet: { likes: req.user._id } },
       { new: true },
     )
     .then((likes) => {
       res.status(200).send(likes);
     })
-    .catch(() => {
-      res.status(500).send('Что-то пошло не так');
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы некорректные данные для постановки лайка'));
+      } else if (err.name === 'NotFoundError') {
+        next(new NotFoundError(`Передан несуществующий _id карточки: ${id}`));
+      } else {
+        next(err);
+      }
     });
 };
 
-const dislikeCard = (req, res) => {
-  Card
+const dislikeCard = (req, res, next) => {
+  const { id } = req.params;
+
+  return Card
     .findByIdAndUpdate(
-      req.params.cardId,
+      id,
       { $pull: { likes: req.user._id } },
       { new: true },
     )
     .then((likes) => {
       res.status(200).send(likes);
     })
-    .catch(() => {
-      res.status(500).send('Что-то пошло не так');
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы некорректные данные для снятия лайка'));
+      } else if (err.name === 'NotFoundError') {
+        next(new NotFoundError(`Передан несуществующий _id карточки: ${id}`));
+      } else {
+        next(err);
+      }
     });
 };
 

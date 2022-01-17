@@ -4,6 +4,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const usersRouter = require('./routes/users');
+const cardsRouter = require('./routes/cards');
 const errorHandler = require('./middleware/error-handler');
 
 const { PORT = 3000 } = process.env;
@@ -15,9 +16,15 @@ mongoose.connect('mongodb://localhost:27017/express-mesto', () => {
 });
 app.use(express.json());
 app.use('/users', usersRouter);
-// app.get('/', (req, res) => {
-//   res.send('GLAVNAY');
-// });
+app.use('/cards', cardsRouter);
+
+app.use((req, res, next) => {
+  req.user = {
+    _id: '61e53b44d893e61eaefbe557',
+  };
+
+  next();
+});
 
 app.use(errorHandler);
 app.listen(PORT, () => {
