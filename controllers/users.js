@@ -1,7 +1,10 @@
+const bcrypt = require('bcryptjs/dist/bcrypt');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const BadRequestError = require('../errors/bad-request-error');
 const NotFoundError = require('../errors/not-found-error');
 const ConflictError = require('../errors/conflict-error');
+const Unauthorized = require('../errors/unauthorized-error');
 
 module.exports.createUser = (req, res, next) => {
   const { name, about, avatar } = req.body;
@@ -102,4 +105,24 @@ module.exports.updateAvatar = (req, res, next) => {
         next(err);
       }
     });
+};
+
+module.exports.loginUser = (req, res, next) => {
+  const { email, password } = req.body;
+  User.findOne({ email })
+    .orFail()
+    .then((user) => {
+      if (!user) {
+        throw new Unauthorized('Неверный логин или пароль');
+      }
+      const token = jwt.sign({ _id: user.id }, 'some-secret-key', { expiresIn: '7d' });
+      res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true });
+      return bcrypt.compare(password, user.password);
+    })
+    .then((matched) => {
+      if (!matched) {
+        throw new Unauthorized('Неверный логин или пароль');
+      }
+    })
+    .catch((err) => next(err));
 };
