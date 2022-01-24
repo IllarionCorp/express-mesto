@@ -20,12 +20,9 @@ MongoDB v5.0.5
 
 ## Инструкция по развертыванию
 * ### Установить Node.js
-* ### Установить в корень проекта модули коммандами
+* ### Выполнить в корне проекта команду
     * ```bash
-        npm install express  
-        npm install nodemon -D  
-        npm i mongoose  
-        npm i body-parser  
+        npm i  
       ```
 * ### Установить MongoDB, можете скачать ее по [ссылке](https://www.mongodb.com/download-center/community?jmp=docs)
 * ### Создать базу данных с названием express-mesto
