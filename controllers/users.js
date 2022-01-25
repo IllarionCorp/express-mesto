@@ -2,6 +2,7 @@ const User = require('../models/user');
 const BadRequestError = require('../errors/bad-request-error');
 const NotFoundError = require('../errors/not-found-error');
 const ConflictError = require('../errors/conflict-error');
+const res = require('express/lib/response');
 
 module.exports.createUser = (req, res, next) => {
   const { name, about, avatar } = req.body;
@@ -77,6 +78,7 @@ module.exports.updateUser = (req, res, next) => {
 };
 
 module.exports.updateAvatar = (req, res, next) => {
+  console.log(req.body)
   const { avatar } = req.body;
   const id = req.user._id;
 
@@ -89,17 +91,9 @@ module.exports.updateAvatar = (req, res, next) => {
         runValidators: true,
       },
     )
-    .orFail(new NotFoundError(`Пользователь с id ${id} не найден`))
-    .then((user) => {
-      res.status(200).send(user);
-    })
+    .orFail(res.status(404).send('dfdf'))
+    .then((result) => res.status(200).send(result))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequestError(`${Object.values(err.errors).map((error) => error.message).join(', ')}`));
-      } else if (err.name === 'CastError') {
-        next(new BadRequestError('Невалидный id'));
-      } else {
-        next(err);
-      }
-    });
+      res.status(500).send('jk');
+    console.log(err.name);});
 };
