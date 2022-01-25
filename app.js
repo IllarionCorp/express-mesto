@@ -3,6 +3,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const auth = require('./middleware/auth');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const signupRouter = require('./routes/signup');
@@ -18,18 +20,14 @@ mongoose.connect('mongodb://localhost:27017/express-mesto', () => {
   console.log('CHECK DB');
 });
 app.use(express.json());
+app.use(cookieParser());
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '61e53b44d893e61eaefbe557',
-  };
-
-  next();
-});
-app.use('/users', usersRouter);
-app.use('/cards', cardsRouter);
 app.use('/signin', signinRouter);
 app.use('/signup', signupRouter);
+
+app.use(auth);
+app.use('/users', usersRouter);
+app.use('/cards', cardsRouter);
 
 app.use((res, req, next) => {
   next(new NotFoundError('Страницы пока нет'));

@@ -1,4 +1,4 @@
-const bcrypt = require('bcryptjs/dist/bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const BadRequestError = require('../errors/bad-request-error');
@@ -7,10 +7,14 @@ const ConflictError = require('../errors/conflict-error');
 const Unauthorized = require('../errors/unauthorized-error');
 
 module.exports.createUser = (req, res, next) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
 
-  return User
-    .create({ name, about, avatar })
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
     .then((user) => {
       res.status(201).send({ user });
     })
@@ -18,7 +22,7 @@ module.exports.createUser = (req, res, next) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError(`${Object.values(err.errors).map((error) => error.message).join(', ')}`));
       } else if (err.code === 11000) {
-        next(new ConflictError(`Пользователь ${name} уже существует`));
+        next(new ConflictError(`Пользователь c email: ${email} уже существует`));
       } else {
         next(err);
       }
@@ -110,13 +114,13 @@ module.exports.updateAvatar = (req, res, next) => {
 module.exports.loginUser = (req, res, next) => {
   const { email, password } = req.body;
   User.findOne({ email })
-    .orFail()
     .then((user) => {
       if (!user) {
         throw new Unauthorized('Неверный логин или пароль');
       }
       const token = jwt.sign({ _id: user.id }, 'some-secret-key', { expiresIn: '7d' });
       res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true });
+      console.log(password);
       return bcrypt.compare(password, user.password);
     })
     .then((matched) => {
@@ -124,5 +128,8 @@ module.exports.loginUser = (req, res, next) => {
         throw new Unauthorized('Неверный логин или пароль');
       }
     })
-    .catch((err) => next(err));
+    .catch((err) => {
+      console.log(err);
+      next(err);
+    });
 };
