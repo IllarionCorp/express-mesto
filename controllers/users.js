@@ -22,7 +22,7 @@ module.exports.createUser = (req, res, next) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError(`${Object.values(err.errors).map((error) => error.message).join(', ')}`));
       } else if (err.code === 11000) {
-        next(new ConflictError(`Пользователь c email: ${email} уже существует`));
+        next(new ConflictError(`Пользователь c email:${email} уже существует`));
       } else {
         next(err);
       }
@@ -38,8 +38,25 @@ module.exports.getUsers = (req, res, next) => User
     next(err);
   });
 
-module.exports.getUser = (req, res, next) => {
+module.exports.getAnyUser = (req, res, next) => {
   const { id } = req.params;
+  return User
+    .findById(id)
+    .orFail(new NotFoundError(`Пользователь с id ${id} не найден`))
+    .then((user) => {
+      res.status(200).send(user);
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Невалидный id'));
+      } else {
+        next(err);
+      }
+    });
+};
+
+module.exports.getUser = (req, res, next) => {
+  const id = req.user._id;
   return User
     .findById(id)
     .orFail(new NotFoundError(`Пользователь с id ${id} не найден`))
@@ -59,6 +76,7 @@ module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
   const id = req.user._id;
 
+  console.log(id);
   return User
     .findByIdAndUpdate(
       id,
@@ -113,14 +131,13 @@ module.exports.updateAvatar = (req, res, next) => {
 
 module.exports.loginUser = (req, res, next) => {
   const { email, password } = req.body;
-  User.findOne({ email })
+  User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
         throw new Unauthorized('Неверный логин или пароль');
       }
       const token = jwt.sign({ _id: user.id }, 'some-secret-key', { expiresIn: '7d' });
-      res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true });
-      console.log(password);
+      res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true, sameSite: true }).end();
       return bcrypt.compare(password, user.password);
     })
     .then((matched) => {
@@ -129,7 +146,6 @@ module.exports.loginUser = (req, res, next) => {
       }
     })
     .catch((err) => {
-      console.log(err);
       next(err);
     });
 };
