@@ -25,7 +25,7 @@ MongoDB v5.0.5
         npm i  
       ```
 * ### Установить MongoDB, можете скачать ее по [ссылке](https://www.mongodb.com/download-center/community?jmp=docs)
-* ### Создать базу данных с названием express-mesto
+* ### Создать базу данных с названием **express-mesto** и коллекциями **users** и **cards**
     
 
 ## Запуск проекта
