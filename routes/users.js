@@ -13,7 +13,11 @@ router.get('/', getUsers);
 
 router.get('/me', getUser);
 
-router.get('/:id', getAnyUser);
+router.get('/:id', celebrate({
+  params: Joi.object().keys({
+    id: Joi.string().alphanum(),
+  }),
+}), getAnyUser);
 
 router.post('/', celebrate({
   body: Joi.object().keys({
@@ -23,7 +27,6 @@ router.post('/', celebrate({
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8),
   }),
-
 }), createUser);
 
 router.patch('/me', updateUser);
