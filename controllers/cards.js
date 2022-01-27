@@ -5,6 +5,7 @@ const NotFoundError = require('../errors/not-found-error');
 const getCards = (req, res, next) => Card
   .find()
   .then((cards) => {
+    console.log(cards[1]._id.toString());
     res.status(201).send(cards);
   })
   .catch((err) => {
@@ -36,8 +37,10 @@ function createCard(req, res, next) {
 const deleteCard = (req, res, next) => {
   const { cardId } = req.params;
 
+  console.log(cardId);
   return Card
-    .findByIdAndRemove(cardId)
+    .findById(cardId)
+    .findOneAndRemove({ owner: req.user._id })
     .orFail(new NotFoundError('Карточка с указанным id не найдена'))
     .then((cards) => {
       res.status(200).send(cards);
@@ -89,6 +92,7 @@ const dislikeCard = (req, res, next) => {
       res.status(200).send(likes);
     })
     .catch((err) => {
+      console.log(err);
       if (err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные для снятия лайка'));
       } else if (err.name === 'CastError') {
