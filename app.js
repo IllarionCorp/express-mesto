@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const { errors } = require('celebrate');
 const auth = require('./middleware/auth');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
@@ -30,7 +31,7 @@ app.use('/cards', cardsRouter);
 app.use((res, req, next) => {
   next(new NotFoundError('Страницы пока нет'));
 });
-
+app.use(errors());
 app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`Say hello my little ${PORT}`);
