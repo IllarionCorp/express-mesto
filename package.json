@@ -1,8 +1,8 @@
 {
   "name": "mesto-back",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "back-end mesto rest api",
+  "main": "app.js",
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
@@ -10,7 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "IllarionCorp",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
