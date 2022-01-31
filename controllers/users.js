@@ -102,7 +102,6 @@ module.exports.updateUser = (req, res, next) => {
 };
 
 module.exports.updateAvatar = (req, res, next) => {
-  console.log(req.body)
   const { avatar } = req.body;
   const id = req.user._id;
 
@@ -115,11 +114,19 @@ module.exports.updateAvatar = (req, res, next) => {
         runValidators: true,
       },
     )
-    .orFail(res.status(404).send('dfdf'))
-    .then((result) => res.status(200).send(result))
+    .orFail(new NotFoundError(`Пользователь с id ${id} не найден`))
+    .then((user) => {
+      res.status(200).send(user);
+    })
     .catch((err) => {
-      res.status(500).send('jk');
-    console.log(err.name);});
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError(`${Object.values(err.errors).map((error) => error.message).join(', ')}`));
+      } else if (err.name === 'CastError') {
+        next(new BadRequestError('Невалидный id'));
+      } else {
+        next(err);
+      }
+    });
 };
 
 
