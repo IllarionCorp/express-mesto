@@ -6,7 +6,7 @@ const NotFoundError = require('../errors/not-found-error');
 const ConflictError = require('../errors/conflict-error');
 const Unauthorized = require('../errors/unauthorized-error');
 
-module.exports.createUser = (req, res, next) => {
+module.exports.signup = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
