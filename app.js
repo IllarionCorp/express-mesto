@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -10,12 +11,12 @@ const signupRouter = require('./routes/signup');
 const signinRouter = require('./routes/signin');
 const errorHandler = require('./middleware/error-handler');
 const NotFoundError = require('./errors/not-found-error');
+const { PORT, DB_ADDRESS } = require('./config');
 
-const { PORT = 3000 } = process.env;
 const app = express();
 app.use(bodyParser.json());
 
-mongoose.connect('mongodb://localhost:27017/express-mesto', () => {
+mongoose.connect(DB_ADDRESS, () => {
   console.log('CHECK DB');
 });
 app.use(express.json());

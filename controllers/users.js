@@ -4,7 +4,7 @@ const User = require('../models/user');
 const BadRequestError = require('../errors/bad-request-error');
 const NotFoundError = require('../errors/not-found-error');
 const ConflictError = require('../errors/conflict-error');
-const Unauthorized = require('../errors/unauthorized-error');
+const { JWT_SECRET } = require('../config');
 
 module.exports.createUser = (req, res, next) => {
   const {
@@ -124,21 +124,17 @@ module.exports.updateAvatar = (req, res, next) => {
 
 module.exports.loginUser = (req, res, next) => {
   const { email, password } = req.body;
-  User.findOne({ email }).select('+password')
+
+  return User.findOneByCredentials(email, password)
     .then((user) => {
-      if (!user) {
-        throw new Unauthorized('Неверный логин или пароль');
-      }
-      const token = jwt.sign({ _id: user.id }, 'some-secret-key', { expiresIn: '7d' });
-      res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true, sameSite: true }).end();
-      return bcrypt.compare(password, user.password);
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET);
+      res
+        .cookie('jwt', token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+          sameSite: true,
+        })
+        .send({ data: user.toJSON() });
     })
-    .then((matched) => {
-      if (!matched) {
-        throw new Unauthorized('Неверный логин или пароль');
-      }
-    })
-    .catch((err) => {
-      next(err);
-    });
+    .catch(next);
 };
