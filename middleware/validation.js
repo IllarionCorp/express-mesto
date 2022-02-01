@@ -13,10 +13,9 @@ function validationLink(v) {
   return /^(https?:\/\/)?(www.)?[a-zA-Z0-9\-.]+\.[a-zA-Z]{2,3}(\/\S*)?$/.test(v);
 }
 
-
 const validationUserId = celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().alphanum().length(24),
+    id: Joi.string().alphanum().length(24),
   }),
 });
 

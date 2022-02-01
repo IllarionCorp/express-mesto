@@ -129,7 +129,6 @@ module.exports.updateAvatar = (req, res, next) => {
     });
 };
 
-
 module.exports.loginUser = (req, res, next) => {
   const { email, password } = req.body;
 
