@@ -12,6 +12,7 @@ const signinRouter = require('./routes/signin');
 const errorHandler = require('./middleware/error-handler');
 const NotFoundError = require('./errors/not-found-error');
 const { PORT, DB_ADDRESS } = require('./config');
+const { requestLogger, errorLogger } = require('./middleware/logger');
 
 const app = express();
 app.use(bodyParser.json());
@@ -21,6 +22,7 @@ mongoose.connect(DB_ADDRESS, () => {
 });
 app.use(express.json());
 app.use(cookieParser());
+app.use(requestLogger);
 
 app.use('/signin', signinRouter);
 app.use('/signup', signupRouter);
@@ -32,6 +34,7 @@ app.use('/cards', cardsRouter);
 app.use((res, req, next) => {
   next(new NotFoundError('Страницы пока нет'));
 });
+app.use(errorLogger);
 app.use(errors());
 app.use(errorHandler);
 app.listen(PORT, () => {
